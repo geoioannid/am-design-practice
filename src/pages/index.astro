@@ -4,26 +4,55 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import Nav from '../components/Nav.astro';
 import Hero from '../components/Hero.astro';
 import ProjectGrid from '../components/ProjectGrid.astro';
-import FadeIn from '../components/FadeIn.astro';
 import Footer from '../components/Footer.astro';
+import { withBase } from '../lib/url';
+import { ORG_ID } from '../lib/seo';
 
 const home = (await getCollection('home'))[0]?.data;
 const projects = (await getCollection('projects')).sort((a, b) => a.data.order - b.data.order);
+
+const site = Astro.site ?? new URL('https://amdesignpractice.com');
+const homeUrl = new URL(withBase('/'), site).href;
+const description =
+  'am design practice — architecture, interiors and bespoke furniture by Angeliki Mathiopoulou. Furniture designed and made in Greece, spaces shaped by their material.';
+
+// WebSite + the project index as an ItemList, so search engines see the
+// portfolio's structure from the home page.
+const jsonLd = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: 'am design practice',
+    url: homeUrl,
+    inLanguage: 'en',
+    publisher: { '@id': `${homeUrl}${ORG_ID}` },
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: 'Projects',
+    itemListElement: projects.map((p, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      url: new URL(withBase(`/projects/${p.id}/`), site).href,
+      name: p.data.title,
+    })),
+  },
+];
 ---
 
-<BaseLayout title="am design practice — architecture, interior, furniture" image={home?.heroImage}>
+<BaseLayout
+  title="am design practice — architecture, interiors & furniture"
+  description={description}
+  image={home?.heroImage}
+  jsonLd={jsonLd}
+>
   <Nav overHero />
   <main>
     {home && <Hero image={home.heroImage} title={home.heroTitle} subtitle={home.heroSubtitle} />}
 
-    <section id="work" class="mx-auto max-w-[1170px] scroll-mt-24 px-4 py-20 sm:px-6 md:py-28 xl:px-0">
-      {
-        home?.intro && (
-          <FadeIn class="mx-auto mb-14 max-w-2xl text-center md:mb-20">
-            <p class="prose-body">{home.intro}</p>
-          </FadeIn>
-        )
-      }
+    <section id="work" aria-label="Projects" class="mx-auto max-w-[1170px] scroll-mt-24 px-4 py-20 sm:px-6 md:py-28 xl:px-0">
+      {home?.intro && <p class="prose-body mx-auto mb-14 max-w-xl text-center md:mb-20">{home.intro}</p>}
       <ProjectGrid projects={projects} />
     </section>
   </main>

@@ -26,13 +26,13 @@ const { image, title, subtitle } = Astro.props;
       class="h-full w-full object-cover"
     />
   </div>
-  <div class="absolute inset-0 bg-[#141834]/40"></div>
+  <div class="absolute inset-0 bg-[#141834]/45"></div>
 
   <div class="relative flex h-full flex-col items-center justify-center px-4 text-center text-white">
     <h1 class="title-mono text-[22px] tracking-[0.4em] sm:text-3xl md:text-[40px]" style="margin-right:-0.4em">
       {title}
     </h1>
-    {subtitle && <p class="label mt-6 text-white/85 md:mt-8">{subtitle}</p>}
+    {subtitle && <p class="label mt-6 text-white/90 md:mt-8">{subtitle}</p>}
   </div>
 
   <a

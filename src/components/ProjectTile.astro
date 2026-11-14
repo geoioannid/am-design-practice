@@ -13,15 +13,13 @@ const { project, index } = Astro.props;
 const p = project.data;
 ---
 
-<li
-  class:list={['tile', p.featured && 'sm:col-span-2 sm:row-span-2']}
-  data-category={p.category}
->
-  <a href={withBase(`/projects/${project.id}/`)} class="group block">
+<li class:list={['tile', p.featured && 'sm:col-span-2 sm:row-span-2']} data-category={p.category}>
+  <a href={withBase(`/projects/${project.id}/`)} class="group relative block focus-visible:outline-offset-2">
     <div class="relative aspect-[4/5] overflow-hidden bg-mist">
+      <!-- Decorative here: the caption below names the link; the project page carries the descriptive alt. -->
       <Picture
         src={resolveUpload(p.cover)}
-        alt={p.title}
+        alt=""
         widths={p.featured ? [600, 900, 1200, 1600] : [400, 600, 800]}
         sizes={p.featured
           ? '(min-width: 1170px) 780px, (min-width: 640px) 100vw, 100vw'
@@ -31,18 +29,10 @@ const p = project.data;
         loading={index < 3 ? 'eager' : 'lazy'}
         class="absolute inset-0 h-full w-full object-cover transition-transform duration-[1200ms] ease-out group-hover:scale-[1.03]"
       />
-      <!-- Glacier's hover veil: white wash with the title centred. Pointer devices only. -->
-      <div
-        class="absolute inset-0 hidden flex-col items-center justify-center gap-3 bg-white/[0.88] px-6 text-center opacity-0 transition-opacity duration-500 group-hover:opacity-100 group-focus-visible:opacity-100 [@media(hover:hover)]:flex"
-      >
-        <span class="title-mono text-[14px] md:text-[15px]">{p.title}</span>
-        <span class="label text-muted-foreground">{p.category}</span>
-      </div>
     </div>
-    <!-- Touch devices: no hover, so the title sits under the image instead. -->
-    <div class="flex items-baseline justify-between gap-4 px-1 pt-3 pb-5 [@media(hover:hover)]:hidden">
-      <span class="title-mono text-[13px]">{p.title}</span>
-      <span class="label text-muted-foreground">{p.category}</span>
+    <div class="tile-meta">
+      <h2 class="title-mono text-[13px] md:text-[15px]">{p.title}</h2>
+      <p class="label text-muted-foreground">{p.category}</p>
     </div>
   </a>
 </li>

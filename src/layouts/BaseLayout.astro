@@ -9,12 +9,18 @@ import { getImage } from 'astro:assets';
 import { resolveUpload } from '../lib/images';
 import { withBase } from '../lib/url';
 import { socialLinks } from '../lib/social';
+import { metaDescription, profileUrls, ORG_ID } from '../lib/seo';
+// Preloaded so the monospace wordmark/nav don't reflow when the webfont lands.
+import monoFont from '@fontsource/space-mono/files/space-mono-latin-400-normal.woff2?url';
+import sansFont from '@fontsource/source-sans-3/files/source-sans-3-latin-300-normal.woff2?url';
 
 interface Props {
   title: string;
   description?: string;
   image?: string;
   noindex?: boolean;
+  /** og:type — 'article' for project pages. */
+  ogType?: 'website' | 'article' | 'profile';
   /** Page-specific JSON-LD, rendered after the site-wide Organization block. */
   jsonLd?: object | object[];
 }
@@ -24,8 +30,10 @@ const {
   description = 'am design practice — architecture, interiors and bespoke furniture by Angeliki Mathiopoulou, designed in Greece.',
   image,
   noindex = false,
+  ogType = 'website',
   jsonLd,
 } = Astro.props;
+const metaDesc = metaDescription(description);
 
 const site = Astro.site ?? new URL('https://amdesignpractice.com');
 const canonical = new URL(Astro.url.pathname, site);
@@ -50,17 +58,26 @@ const ogHeight = ogVariant?.attributes.height ?? 630;
 const ogAlt = `${title} — featured photograph`;
 
 const settings = (await getCollection('settings'))[0]?.data;
+const home = new URL(withBase('/'), site).href;
+const sameAs = profileUrls(socialLinks(settings));
 const organization = {
   '@context': 'https://schema.org',
   '@type': 'Organization',
+  '@id': `${home}${ORG_ID}`,
   name: 'am design practice',
-  url: site.href,
+  url: home,
   logo: new URL(withBase('/apple-touch-icon.png'), site).href,
+  description:
+    'Architecture, interiors and bespoke furniture by architectural designer Angeliki Mathiopoulou, designed and made in Greece.',
+  founder: { '@type': 'Person', name: 'Angeliki Mathiopoulou', jobTitle: 'Architectural designer' },
+  knowsAbout: ['Architecture', 'Interior design', 'Furniture design', 'Bespoke furniture'],
   ...(settings?.email ? { email: settings.email } : {}),
-  ...(settings?.city
-    ? { address: { '@type': 'PostalAddress', addressLocality: settings.city } }
-    : {}),
-  ...(socialLinks(settings).length ? { sameAs: socialLinks(settings).map((l) => l.href) } : {}),
+  address: {
+    '@type': 'PostalAddress',
+    addressCountry: 'GR',
+    ...(settings?.city && settings.city !== 'Greece' ? { addressLocality: settings.city } : {}),
+  },
+  ...(sameAs.length ? { sameAs } : {}),
 };
 const extraLd = jsonLd === undefined ? [] : Array.isArray(jsonLd) ? jsonLd : [jsonLd];
 const beacon = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
@@ -74,17 +91,21 @@ const beacon = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
     <meta name="generator" content={Astro.generator} />
     <meta name="theme-color" content="#1f2650" />
     <title>{title}</title>
-    <meta name="description" content={description} />
+    <meta name="description" content={metaDesc} />
+    <meta name="author" content="Angeliki Mathiopoulou" />
     {noindex && <meta name="robots" content="noindex" />}
     <link rel="canonical" href={canonical} />
+    <link rel="preload" href={monoFont} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={sansFont} as="font" type="font/woff2" crossorigin />
     <link rel="icon" href={withBase('/favicon.ico')} sizes="any" />
     <link rel="icon" href={withBase('/favicon.svg')} type="image/svg+xml" />
     <link rel="apple-touch-icon" href={withBase('/apple-touch-icon.png')} />
     <link rel="sitemap" href={withBase('/sitemap-index.xml')} />
-    <meta property="og:type" content="website" />
+    <meta property="og:type" content={ogType} />
+    <meta property="og:locale" content="en_GB" />
     <meta property="og:site_name" content="am design practice" />
     <meta property="og:title" content={title} />
-    <meta property="og:description" content={description} />
+    <meta property="og:description" content={metaDesc} />
     <meta property="og:url" content={canonical} />
     <meta property="og:image" content={ogImage} />
     <meta property="og:image:width" content={ogWidth} />
@@ -93,7 +114,7 @@ const beacon = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
     <meta property="og:image:type" content="image/jpeg" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />
-    <meta name="twitter:description" content={description} />
+    <meta name="twitter:description" content={metaDesc} />
     <meta name="twitter:image" content={ogImage} />
     <meta name="twitter:image:alt" content={ogAlt} />
     <script type="application/ld+json" set:html={JSON.stringify(organization)} />

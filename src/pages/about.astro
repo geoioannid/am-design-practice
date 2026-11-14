@@ -3,11 +3,12 @@ import { getCollection } from 'astro:content';
 import { Picture, getImage } from 'astro:assets';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Nav from '../components/Nav.astro';
-import FadeIn from '../components/FadeIn.astro';
 import Footer from '../components/Footer.astro';
 import { resolveUpload } from '../lib/images';
 import { paragraphs } from '../lib/blocks';
 import { socialLinks } from '../lib/social';
+import { profileUrls, ORG_ID } from '../lib/seo';
+import { withBase } from '../lib/url';
 
 const about = (await getCollection('about'))[0]?.data;
 const settings = (await getCollection('settings'))[0]?.data;
@@ -31,23 +32,25 @@ const profile = {
     name: 'Angeliki Mathiopoulou',
     jobTitle: 'Architectural designer',
     alternateName: 'am design practice',
-    worksFor: { '@type': 'Organization', name: 'am design practice', url: site.href },
+    worksFor: { '@id': `${new URL(withBase('/'), site).href}${ORG_ID}` },
+    knowsAbout: about?.disciplines ?? [],
     ...(portraitCard ? { image: new URL(portraitCard.src, site).href } : {}),
-    ...(links.length ? { sameAs: links.map((l) => l.href) } : {}),
+    ...(profileUrls(links).length ? { sameAs: profileUrls(links) } : {}),
   },
 };
 ---
 
 <BaseLayout
-  title="about — am design practice"
-  description="About am design practice — Angeliki Mathiopoulou's studio for architecture, interiors and bespoke furniture, based in Greece."
+  title="About Angeliki Mathiopoulou — am design practice"
+  description="am design practice is the studio of architectural designer Angeliki Mathiopoulou: architecture, interiors and bespoke furniture, designed and made in Greece."
   image={about?.portrait}
+  ogType="profile"
   jsonLd={profile}
 >
   <Nav />
   <main class="pt-28 pb-24 md:pt-40 md:pb-32">
     <div class="mx-auto grid max-w-[1170px] gap-12 px-4 sm:px-6 md:grid-cols-12 md:gap-x-10 xl:px-0">
-      <FadeIn class="md:col-span-5">
+      <div class="md:col-span-5">
         {portrait && (
           <Picture
             src={portrait}
@@ -56,14 +59,17 @@ const profile = {
             width={470}
             formats={['avif', 'webp']}
             fallbackFormat="webp"
+            fetchpriority="high"
+            loading="eager"
             class="block h-auto w-full bg-mist"
           />
         )}
-      </FadeIn>
+      </div>
 
-      <FadeIn delay={120} class="md:col-span-6 md:col-start-7 md:pt-4">
-        <p class="label text-muted-foreground">about</p>
-        {about?.heading && <h1 class="title-mono mt-6 text-[18px] leading-relaxed md:text-[22px]">{about.heading}</h1>}
+      <div class="md:col-span-6 md:col-start-7 md:pt-2">
+        <h1 class="title-mono text-[19px] leading-relaxed text-balance md:text-[22px]">
+          {about?.heading || 'About am design practice'}
+        </h1>
 
         <div class="mt-8 space-y-5">
           {paragraphs(about?.bio ?? '').map((para) => (
@@ -71,7 +77,7 @@ const profile = {
           ))}
         </div>
 
-        <div class="mt-14 grid gap-12 sm:grid-cols-2">
+        <div class="mt-14 grid gap-12 border-t border-border pt-10 sm:grid-cols-2">
           {
             (about?.disciplines ?? []).length > 0 && (
               <div>
@@ -99,7 +105,7 @@ const profile = {
             </ul>
           </div>
         </div>
-      </FadeIn>
+      </div>
     </div>
   </main>
   <Footer />

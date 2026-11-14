@@ -5,13 +5,17 @@ import Monogram from '../components/Monogram.astro';
 import { withBase } from '../lib/url';
 ---
 
-<BaseLayout title="not found — am design practice" noindex>
+<BaseLayout title="Page not found — am design practice" noindex>
   <Nav />
   <main class="flex min-h-screen items-center justify-center px-4">
     <div class="flex flex-col items-center text-center">
       <Monogram class="h-20 w-auto" />
-      <p class="label mt-10 text-muted-foreground">page not found</p>
-      <a href={withBase('/')} class="label mt-6 underline underline-offset-8 hover:opacity-60">return home</a>
+      <h1 class="title-mono mt-10 text-[18px]">page not found</h1>
+      <p class="prose-body mt-4">This page has moved or never existed.</p>
+      <ul class="mt-8 flex gap-8">
+        <li><a href={withBase('/')} class="label underline hover:opacity-60">all projects</a></li>
+        <li><a href={withBase('/about/')} class="label underline hover:opacity-60">about</a></li>
+      </ul>
     </div>
   </main>
 </BaseLayout>

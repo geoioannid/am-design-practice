@@ -1,6 +1,6 @@
 ---
 import { getCollection, type CollectionEntry } from 'astro:content';
-import { Picture } from 'astro:assets';
+import { Picture, getImage } from 'astro:assets';
 import type { ImageMetadata } from 'astro';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Nav from '../../components/Nav.astro';
@@ -10,6 +10,7 @@ import ModelViewer from '../../components/ModelViewer.astro';
 import { resolveUpload, isPortrait } from '../../lib/images';
 import { chunkPairs, paragraphs } from '../../lib/blocks';
 import { withBase } from '../../lib/url';
+import { ORG_ID } from '../../lib/seo';
 
 export async function getStaticPaths() {
   const projects = (await getCollection('projects')).sort((a, b) => a.data.order - b.data.order);
@@ -27,6 +28,46 @@ interface Props {
 
 const { project, next } = Astro.props;
 const d = project.data;
+
+const site = Astro.site ?? new URL('https://amdesignpractice.com');
+const homeUrl = new URL(withBase('/'), site).href;
+const pageUrl = new URL(withBase(`/projects/${project.id}/`), site).href;
+const description =
+  d.description ||
+  `${d.title} — ${d.category.toLowerCase()} by am design practice${d.location ? `, ${d.location}` : ''}${d.year ? `, ${d.year}` : ''}.`;
+
+// Same transform as the layout's og:image, so it is generated once.
+const card = await getImage({
+  src: resolveUpload(d.cover),
+  width: 1200,
+  height: 630,
+  fit: 'cover',
+  format: 'jpeg',
+  quality: 80,
+});
+const jsonLd = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'CreativeWork',
+    name: d.title,
+    url: pageUrl,
+    description,
+    image: new URL(card.src, site).href,
+    genre: d.category,
+    inLanguage: 'en',
+    creator: { '@id': `${homeUrl}${ORG_ID}` },
+    ...(/^\d{4}$/.test(d.year) ? { dateCreated: d.year } : {}),
+    ...(d.location ? { locationCreated: { '@type': 'Place', name: d.location } } : {}),
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Projects', item: homeUrl },
+      { '@type': 'ListItem', position: 2, name: d.title, item: pageUrl },
+    ],
+  },
+];
 
 // Glacier's "project details" list; empty fields are skipped.
 const details = [
@@ -60,15 +101,17 @@ const renderedBlocks: RenderedBlock[] = d.blocks.map((block) =>
 
 <BaseLayout
   title={`${d.title} — am design practice`}
-  description={d.description || `${d.title}${d.location ? `, ${d.location}` : ''}${d.year ? `, ${d.year}` : ''}`}
+  description={description}
   image={d.cover}
+  ogType="article"
+  jsonLd={jsonLd}
 >
   <Nav />
   <main class="pt-28 md:pt-36">
     <!-- Header: main image (or 3D model) left, title + details right -->
     <section class="mx-auto max-w-[1170px] px-4 sm:px-6 xl:px-0">
       <div class="grid gap-10 md:grid-cols-12 md:gap-x-10">
-        <FadeIn class="md:col-span-7">
+        <div class="md:col-span-7">
           {
             d.model ? (
               <ModelViewer model={d.model} poster={d.cover} alt={d.modelAlt || `3D model — ${d.title}`} />
@@ -89,10 +132,10 @@ const renderedBlocks: RenderedBlock[] = d.blocks.map((block) =>
               </div>
             )
           }
-        </FadeIn>
+        </div>
 
-        <FadeIn delay={120} class="md:col-span-5">
-          <h1 class="title-mono text-[20px] leading-snug md:text-[24px]">{d.title}</h1>
+        <div class="md:col-span-5 md:pt-2">
+          <h1 class="title-mono text-[22px] leading-snug text-balance md:text-[26px]">{d.title}</h1>
 
           {
             d.description && (
@@ -107,8 +150,8 @@ const renderedBlocks: RenderedBlock[] = d.blocks.map((block) =>
           {
             details.length > 0 && (
               <>
-                <h2 class="title-mono mt-12 text-[14px]">project details</h2>
-                <dl class="mt-6 space-y-5">
+                <h2 class="title-mono mt-14 border-t border-border pt-8 text-[13px]">project details</h2>
+                <dl class="mt-6 grid grid-cols-2 gap-x-6 gap-y-5">
                   {details.map(([label, value]) => (
                     <div>
                       <dt class="label">{label}</dt>
@@ -119,7 +162,7 @@ const renderedBlocks: RenderedBlock[] = d.blocks.map((block) =>
               </>
             )
           }
-        </FadeIn>
+        </div>
       </div>
     </section>
 
@@ -129,13 +172,16 @@ const renderedBlocks: RenderedBlock[] = d.blocks.map((block) =>
         <section class="mx-auto max-w-[1170px] space-y-16 px-4 pt-20 sm:px-6 md:space-y-24 md:pt-28 xl:px-0">
           {renderedBlocks.map((block) =>
             block.kind === 'text' ? (
-              <FadeIn class="max-w-2xl">
-                {block.subtitle && <p class="label text-muted-foreground">{block.subtitle}</p>}
-                {block.title && <h2 class="title-mono mt-3 text-[16px] md:text-[18px]">{block.title}</h2>}
-                <div class="mt-6 space-y-5">
-                  {block.paragraphs.map((para) => (
-                    <p class="prose-body">{para}</p>
-                  ))}
+              // Section label sits in its own column on the rule, like a drawing's title block.
+              <FadeIn class="grid gap-y-5 border-t border-border pt-8 md:grid-cols-12 md:gap-x-10">
+                <p class="label text-muted-foreground md:col-span-3">{block.subtitle}</p>
+                <div class="max-w-[38rem] md:col-span-8 md:col-start-5">
+                  {block.title && <h2 class="title-mono text-[17px] leading-snug text-balance md:text-[19px]">{block.title}</h2>}
+                  <div class:list={['space-y-5', block.title && 'mt-6']}>
+                    {block.paragraphs.map((para) => (
+                      <p class="prose-body">{para}</p>
+                    ))}
+                  </div>
                 </div>
               </FadeIn>
             ) : (
@@ -191,15 +237,15 @@ const renderedBlocks: RenderedBlock[] = d.blocks.map((block) =>
       class="mx-auto flex max-w-[1170px] items-center justify-between gap-6 px-4 py-20 sm:px-6 md:py-28 xl:px-0"
       aria-label="Projects"
     >
-      <a href={withBase('/#work')} class="label transition-opacity hover:opacity-60">← all projects</a>
+      <a href={withBase('/#work')} class="label py-3 transition-opacity hover:opacity-60">← all projects</a>
       {
         next && (
           <a
             href={withBase(`/projects/${next.id}/`)}
-            class="label bg-foreground px-6 py-4 text-white transition-opacity hover:opacity-85"
-            aria-label={`Next project: ${next.data.title}`}
+            class="group flex flex-col items-end gap-2 bg-foreground px-6 py-4 text-white transition-opacity hover:opacity-90"
           >
-            next project →
+            <span class="label">next project →</span>
+            <span class="title-mono text-[13px] text-white/75">{next.data.title}</span>
           </a>
         )
       }
