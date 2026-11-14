@@ -7,9 +7,11 @@ import FadeIn from '../components/FadeIn.astro';
 import Footer from '../components/Footer.astro';
 import { resolveUpload } from '../lib/images';
 import { paragraphs } from '../lib/blocks';
+import { socialLinks } from '../lib/social';
 
 const about = (await getCollection('about'))[0]?.data;
 const settings = (await getCollection('settings'))[0]?.data;
+const links = socialLinks(settings);
 const portrait = about?.portrait ? resolveUpload(about.portrait) : undefined;
 const site = Astro.site ?? new URL('https://amdesignpractice.com');
 
@@ -31,7 +33,7 @@ const profile = {
     alternateName: 'am design practice',
     worksFor: { '@type': 'Organization', name: 'am design practice', url: site.href },
     ...(portraitCard ? { image: new URL(portraitCard.src, site).href } : {}),
-    ...(settings?.instagram ? { sameAs: [settings.instagram] } : {}),
+    ...(links.length ? { sameAs: links.map((l) => l.href) } : {}),
   },
 };
 ---
@@ -88,11 +90,11 @@ const profile = {
                   <a href={`mailto:${settings.email}`} class="underline underline-offset-4 hover:opacity-60">{settings.email}</a>
                 </li>
               )}
-              {settings?.instagram && (
+              {links.map(({ label, href }) => (
                 <li>
-                  <a href={settings.instagram} target="_blank" rel="noreferrer" class="underline underline-offset-4 hover:opacity-60">instagram</a>
+                  <a href={href} target="_blank" rel="noreferrer" class="underline underline-offset-4 hover:opacity-60">{label}</a>
                 </li>
-              )}
+              ))}
               {settings?.city && <li>{settings.city}</li>}
             </ul>
           </div>

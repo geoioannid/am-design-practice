@@ -90,6 +90,8 @@ const settings = defineCollection({
   schema: z.object({
     email: z.string().default(''),
     instagram: z.string().default(''),
+    linkedin: z.string().default(''),
+    etsy: z.string().default(''),
     city: z.string().default(''),
   }),
 });

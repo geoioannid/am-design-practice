@@ -1,10 +1,11 @@
 ---
 import { getCollection } from 'astro:content';
 import Monogram from './Monogram.astro';
+import { socialLinks } from '../lib/social';
 
 const settings = (await getCollection('settings'))[0]?.data;
 const email = settings?.email ?? '';
-const instagram = settings?.instagram ?? '';
+const links = socialLinks(settings);
 const city = settings?.city ?? '';
 ---
 
@@ -16,13 +17,13 @@ const city = settings?.city ?? '';
         <li><a href={`mailto:${email}`} class="label transition-opacity hover:opacity-60">{email}</a></li>
       )}
       {
-        instagram && (
+        links.map(({ label, href }) => (
           <li>
-            <a href={instagram} target="_blank" rel="noreferrer" class="label transition-opacity hover:opacity-60">
-              instagram
+            <a href={href} target="_blank" rel="noreferrer" class="label transition-opacity hover:opacity-60">
+              {label}
             </a>
           </li>
-        )
+        ))
       }
     </ul>
     <p class="mt-8 text-[13px] text-muted-foreground">

@@ -172,4 +172,6 @@ collections:
         fields:
           - { label: Email, name: email, widget: string }
           - { label: Instagram URL, name: instagram, widget: string, required: false }
+          - { label: LinkedIn URL, name: linkedin, widget: string, required: false, hint: 'Full profile link, e.g. https://www.linkedin.com/in/your-name/' }
+          - { label: Etsy shop URL, name: etsy, widget: string, required: false, hint: 'Full shop link, e.g. https://www.etsy.com/shop/YourShop' }
           - { label: City, name: city, widget: string, required: false }

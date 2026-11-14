@@ -8,6 +8,7 @@ import { getCollection } from 'astro:content';
 import { getImage } from 'astro:assets';
 import { resolveUpload } from '../lib/images';
 import { withBase } from '../lib/url';
+import { socialLinks } from '../lib/social';
 
 interface Props {
   title: string;
@@ -59,7 +60,7 @@ const organization = {
   ...(settings?.city
     ? { address: { '@type': 'PostalAddress', addressLocality: settings.city } }
     : {}),
-  ...(settings?.instagram ? { sameAs: [settings.instagram] } : {}),
+  ...(socialLinks(settings).length ? { sameAs: socialLinks(settings).map((l) => l.href) } : {}),
 };
 const extraLd = jsonLd === undefined ? [] : Array.isArray(jsonLd) ? jsonLd : [jsonLd];
 const beacon = import.meta.env.PUBLIC_CF_BEACON_TOKEN;

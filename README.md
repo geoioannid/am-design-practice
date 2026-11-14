@@ -19,8 +19,9 @@ Same stack as `anna-tsoka-architecture`.
 
 > **Mock content.** There is no real project data yet. The projects, about text
 > and hero are placeholders built from her Instagram posts (images ~1080px wide —
-> real uploads should be ≥2560px). The email `hello@amdesignpractice.com` and the
-> domain `amdesignpractice.com` are placeholders too. The 3D model on
+> real uploads should be ≥2560px). The email `hello@amdesignpractice.com`, the
+> LinkedIn and Etsy links (generic site homepages) and the domain
+> `amdesignpractice.com` are placeholders too. The 3D model on
 > *Curved lounge* is the CC0 Khronos sample "SheenChair" (Wayfair).
 
 ## Local development
