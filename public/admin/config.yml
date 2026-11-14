@@ -150,7 +150,7 @@ collections:
           - label: Hero image
             name: heroImage
             widget: image
-            hint: Fills the whole screen behind the title and moves slightly as you scroll. A calm, not-too-busy photo works best; it is darkened a little so the white title stays readable.
+            hint: A wide band (630px tall) behind the title that moves slightly as you scroll. A calm, not-too-busy photo works best; it is darkened a little so the white title stays readable.
           - { label: Intro line, name: intro, widget: text, required: false, hint: Short line shown above the project grid. }
       - name: about
         label: About page

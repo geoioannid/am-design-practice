@@ -37,12 +37,13 @@ const { overHero = false } = Astro.props;
   const nav = document.getElementById('site-nav');
   if (nav) {
     const overHero = nav.dataset.overHero === 'true';
+    const hero = document.querySelector<HTMLElement>('[data-hero]');
     let lastY = window.scrollY;
     let ticking = false;
 
     const update = () => {
       const y = window.scrollY;
-      const heroBottom = overHero ? window.innerHeight - nav.offsetHeight : 0;
+      const heroBottom = overHero && hero ? hero.offsetHeight - nav.offsetHeight : 0;
       const delta = y - lastY;
 
       nav.classList.toggle('nav-clear', overHero && y < heroBottom);

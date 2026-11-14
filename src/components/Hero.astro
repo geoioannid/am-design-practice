@@ -10,7 +10,8 @@ interface Props {
 const { image, title, subtitle } = Astro.props;
 ---
 
-<section class="relative h-[100svh] min-h-[480px] overflow-hidden bg-foreground" data-hero>
+<!-- Fixed 630px, as in Glacier (its .parallax height at every breakpoint). -->
+<section class="relative h-[630px] overflow-hidden bg-foreground" data-hero>
   <!-- Taller than the frame so the parallax shift never reveals an edge. -->
   <div class="absolute inset-x-0 -top-[15%] h-[130%] will-change-transform" data-parallax>
     <Picture

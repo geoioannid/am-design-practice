@@ -44,7 +44,7 @@ the editor's GitHub token login, analytics, and preparing 3D models.
 | Collection (in `/admin`) | File | Renders as |
 | --- | --- | --- |
 | Projects | `src/content/projects/*.md` | home grid tile (order, category filter, featured = 2×2) + `/projects/<slug>/` |
-| Home page | `src/content/home.yml` | full-screen parallax hero + intro line |
+| Home page | `src/content/home.yml` | 630px parallax hero + intro line |
 | About page | `src/content/about.yml` | `/about/` |
 | Contact & footer | `src/content/settings.yml` | footer (`#contact`) + About contact block |
 

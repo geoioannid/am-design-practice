@@ -107,7 +107,7 @@ back.
   the project page top-to-bottom from *Text section* and *Image set* blocks;
   in an image set, images pair up side by side when at least one of the two
   is portrait, and go full width otherwise.
-- **Home page** — hero title/subtitle, the full-screen hero photo and the
+- **Home page** — hero title/subtitle, the hero photo (a wide 630px band) and the
   short intro line above the grid.
 - **About page** — portrait, heading, bio (blank line = new paragraph) and
   the disciplines list.
