@@ -1,0 +1,11 @@
+node_modules/
+dist/
+.astro/
+.DS_Store
+npm-debug.log*
+.env
+.env.*
+.zcode/
+.idea/
+# Saved Instagram page used as the source for mock content; the images we use are in src/uploads.
+assets/

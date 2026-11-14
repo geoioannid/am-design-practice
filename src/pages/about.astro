@@ -1,0 +1,104 @@
+---
+import { getCollection } from 'astro:content';
+import { Picture, getImage } from 'astro:assets';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Nav from '../components/Nav.astro';
+import FadeIn from '../components/FadeIn.astro';
+import Footer from '../components/Footer.astro';
+import { resolveUpload } from '../lib/images';
+import { paragraphs } from '../lib/blocks';
+
+const about = (await getCollection('about'))[0]?.data;
+const settings = (await getCollection('settings'))[0]?.data;
+const portrait = about?.portrait ? resolveUpload(about.portrait) : undefined;
+const site = Astro.site ?? new URL('https://amdesignpractice.com');
+
+// Same transform as the layout's og:image (sharp caches by parameters, so the
+// crop is generated once); gives the Person markup a real, absolute image URL.
+const portraitCard = portrait
+  ? await getImage({ src: portrait, width: 1200, height: 630, fit: 'cover', format: 'jpeg', quality: 80 })
+  : undefined;
+
+// Google's ProfilePage rich result: the about page is the profile of the
+// designer behind the practice.
+const profile = {
+  '@context': 'https://schema.org',
+  '@type': 'ProfilePage',
+  mainEntity: {
+    '@type': 'Person',
+    name: 'Angeliki Mathiopoulou',
+    jobTitle: 'Architectural designer',
+    alternateName: 'am design practice',
+    worksFor: { '@type': 'Organization', name: 'am design practice', url: site.href },
+    ...(portraitCard ? { image: new URL(portraitCard.src, site).href } : {}),
+    ...(settings?.instagram ? { sameAs: [settings.instagram] } : {}),
+  },
+};
+---
+
+<BaseLayout
+  title="about — am design practice"
+  description="About am design practice — Angeliki Mathiopoulou's studio for architecture, interiors and bespoke furniture, based in Greece."
+  image={about?.portrait}
+  jsonLd={profile}
+>
+  <Nav />
+  <main class="pt-28 pb-24 md:pt-40 md:pb-32">
+    <div class="mx-auto grid max-w-[1170px] gap-12 px-4 sm:px-6 md:grid-cols-12 md:gap-x-10 xl:px-0">
+      <FadeIn class="md:col-span-5">
+        {portrait && (
+          <Picture
+            src={portrait}
+            alt="am design practice — bespoke spaces, furniture & design"
+            layout="constrained"
+            width={470}
+            formats={['avif', 'webp']}
+            fallbackFormat="webp"
+            class="block h-auto w-full bg-mist"
+          />
+        )}
+      </FadeIn>
+
+      <FadeIn delay={120} class="md:col-span-6 md:col-start-7 md:pt-4">
+        <p class="label text-muted-foreground">about</p>
+        {about?.heading && <h1 class="title-mono mt-6 text-[18px] leading-relaxed md:text-[22px]">{about.heading}</h1>}
+
+        <div class="mt-8 space-y-5">
+          {paragraphs(about?.bio ?? '').map((para) => (
+            <p class="prose-body">{para}</p>
+          ))}
+        </div>
+
+        <div class="mt-14 grid gap-12 sm:grid-cols-2">
+          {
+            (about?.disciplines ?? []).length > 0 && (
+              <div>
+                <h2 class="label">disciplines</h2>
+                <ul class="mt-5 space-y-2 text-[15px] text-muted-foreground">
+                  {about!.disciplines.map((d) => <li>{d}</li>)}
+                </ul>
+              </div>
+            )
+          }
+          <div>
+            <h2 class="label">contact</h2>
+            <ul class="mt-5 space-y-2 text-[15px] text-muted-foreground">
+              {settings?.email && (
+                <li>
+                  <a href={`mailto:${settings.email}`} class="underline underline-offset-4 hover:opacity-60">{settings.email}</a>
+                </li>
+              )}
+              {settings?.instagram && (
+                <li>
+                  <a href={settings.instagram} target="_blank" rel="noreferrer" class="underline underline-offset-4 hover:opacity-60">instagram</a>
+                </li>
+              )}
+              {settings?.city && <li>{settings.city}</li>}
+            </ul>
+          </div>
+        </div>
+      </FadeIn>
+    </div>
+  </main>
+  <Footer />
+</BaseLayout>

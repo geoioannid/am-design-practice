@@ -1,0 +1,31 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Nav from '../components/Nav.astro';
+import Hero from '../components/Hero.astro';
+import ProjectGrid from '../components/ProjectGrid.astro';
+import FadeIn from '../components/FadeIn.astro';
+import Footer from '../components/Footer.astro';
+
+const home = (await getCollection('home'))[0]?.data;
+const projects = (await getCollection('projects')).sort((a, b) => a.data.order - b.data.order);
+---
+
+<BaseLayout title="am design practice — architecture, interior, furniture" image={home?.heroImage}>
+  <Nav overHero />
+  <main>
+    {home && <Hero image={home.heroImage} title={home.heroTitle} subtitle={home.heroSubtitle} />}
+
+    <section id="work" class="mx-auto max-w-[1170px] scroll-mt-24 px-4 py-20 sm:px-6 md:py-28 xl:px-0">
+      {
+        home?.intro && (
+          <FadeIn class="mx-auto mb-14 max-w-2xl text-center md:mb-20">
+            <p class="prose-body">{home.intro}</p>
+          </FadeIn>
+        )
+      }
+      <ProjectGrid projects={projects} />
+    </section>
+  </main>
+  <Footer />
+</BaseLayout>

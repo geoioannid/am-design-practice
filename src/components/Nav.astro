@@ -1,0 +1,73 @@
+---
+import Monogram from './Monogram.astro';
+import { withBase } from '../lib/url';
+
+interface Props {
+  /** Start transparent with white ink (only on pages that open with the full-bleed hero). */
+  overHero?: boolean;
+}
+const { overHero = false } = Astro.props;
+---
+
+<header
+  id="site-nav"
+  class:list={['fixed inset-x-0 top-0 z-50', overHero && 'nav-clear']}
+  data-over-hero={overHero ? 'true' : 'false'}
+>
+  <nav
+    class="mx-auto flex max-w-[1170px] items-center justify-between px-4 py-5 sm:px-6 md:py-7 xl:px-0"
+    aria-label="Main"
+  >
+    <a href={withBase('/')} class="flex items-center gap-3" aria-label="am design practice — home">
+      <Monogram class="h-8 w-auto md:h-9" strokeWidth={1.4} />
+      <span class="font-mono text-[12px] font-bold tracking-[0.14em] lowercase md:text-[13px]">
+        am design practice
+      </span>
+    </a>
+    <ul class="flex items-center gap-6 md:gap-10">
+      <li><a href={withBase('/about/')} class="label transition-opacity hover:opacity-60">about</a></li>
+      <li><a href="#contact" class="label transition-opacity hover:opacity-60">contact</a></li>
+    </ul>
+  </nav>
+</header>
+
+<script>
+  // Over the hero: transparent. Scrolling down: slide away. Scrolling up: come
+  // back as a solid bar. Small jitters (< 6px) are ignored.
+  const nav = document.getElementById('site-nav');
+  if (nav) {
+    const overHero = nav.dataset.overHero === 'true';
+    let lastY = window.scrollY;
+    let ticking = false;
+
+    const update = () => {
+      const y = window.scrollY;
+      const heroBottom = overHero ? window.innerHeight - nav.offsetHeight : 0;
+      const delta = y - lastY;
+
+      nav.classList.toggle('nav-clear', overHero && y < heroBottom);
+      nav.classList.toggle('nav-raised', y > 4 && !(overHero && y < heroBottom));
+
+      if (y < 80) nav.classList.remove('nav-hidden');
+      else if (delta > 6) nav.classList.add('nav-hidden');
+      else if (delta < -6) nav.classList.remove('nav-hidden');
+
+      if (Math.abs(delta) > 6) lastY = y;
+      ticking = false;
+    };
+
+    update();
+    window.addEventListener(
+      'scroll',
+      () => {
+        if (!ticking) {
+          ticking = true;
+          requestAnimationFrame(update);
+        }
+      },
+      { passive: true },
+    );
+    // Keyboard users tabbing into a hidden nav should see it.
+    nav.addEventListener('focusin', () => nav.classList.remove('nav-hidden'));
+  }
+</script>

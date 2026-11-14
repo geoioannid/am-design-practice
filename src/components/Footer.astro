@@ -1,0 +1,32 @@
+---
+import { getCollection } from 'astro:content';
+import Monogram from './Monogram.astro';
+
+const settings = (await getCollection('settings'))[0]?.data;
+const email = settings?.email ?? '';
+const instagram = settings?.instagram ?? '';
+const city = settings?.city ?? '';
+---
+
+<footer id="contact" class="bg-mist">
+  <div class="mx-auto flex max-w-[1170px] flex-col items-center px-4 py-20 text-center sm:px-6 md:py-24">
+    <Monogram class="h-12 w-auto" />
+    <ul class="mt-10 flex flex-wrap justify-center gap-x-10 gap-y-4">
+      {email && (
+        <li><a href={`mailto:${email}`} class="label transition-opacity hover:opacity-60">{email}</a></li>
+      )}
+      {
+        instagram && (
+          <li>
+            <a href={instagram} target="_blank" rel="noreferrer" class="label transition-opacity hover:opacity-60">
+              instagram
+            </a>
+          </li>
+        )
+      }
+    </ul>
+    <p class="mt-8 text-[13px] text-muted-foreground">
+      © {new Date().getFullYear()} am design practice{city && ` — ${city}`}
+    </p>
+  </div>
+</footer>

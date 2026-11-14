@@ -1,0 +1,72 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import ProjectTile from './ProjectTile.astro';
+import { CATEGORIES } from '../lib/categories';
+
+interface Props {
+  projects: CollectionEntry<'projects'>[];
+}
+const { projects } = Astro.props;
+// Only offer filters that would show something.
+const categories = CATEGORIES.filter((c) => projects.some((p) => p.data.category === c));
+---
+
+<div data-project-grid>
+  {
+    categories.length > 1 && (
+      <div
+        class="mb-10 hidden flex-wrap justify-center gap-x-8 gap-y-3 md:mb-14 md:gap-x-12"
+        role="group"
+        aria-label="Filter projects"
+        data-filters
+      >
+        <button type="button" class="filter-btn label cursor-pointer transition-opacity hover:opacity-60" data-filter="all" aria-pressed="true">
+          all
+        </button>
+        {categories.map((c) => (
+          <button type="button" class="filter-btn label cursor-pointer transition-opacity hover:opacity-60" data-filter={c} aria-pressed="false">
+            {c}
+          </button>
+        ))}
+      </div>
+    )
+  }
+
+  <!-- 4:5 tiles (her Instagram format); a featured project spans 2×2. `dense` back-fills the gaps. -->
+  <ul class="grid grid-flow-dense grid-cols-1 gap-[6px] sm:grid-cols-2 lg:grid-cols-3">
+    {projects.map((project, i) => <ProjectTile project={project} index={i} />)}
+  </ul>
+</div>
+
+<script>
+  for (const root of document.querySelectorAll<HTMLElement>('[data-project-grid]')) {
+    const bar = root.querySelector<HTMLElement>('[data-filters]');
+    if (!bar) continue;
+    // Filters only exist once JS runs; without it every project is listed.
+    bar.classList.replace('hidden', 'flex');
+
+    const buttons = [...bar.querySelectorAll<HTMLButtonElement>('[data-filter]')];
+    const tiles = [...root.querySelectorAll<HTMLElement>('.tile')];
+    const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+
+    const apply = (filter: string) => {
+      buttons.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.filter === filter)));
+      const show = (t: HTMLElement) => filter === 'all' || t.dataset.category === filter;
+
+      clearTimeout(timer);
+      tiles.forEach((t) => t.classList.add('is-leaving'));
+      timer = setTimeout(
+        () => {
+          tiles.forEach((t) => (t.hidden = !show(t)));
+          requestAnimationFrame(() =>
+            requestAnimationFrame(() => tiles.forEach((t) => t.classList.remove('is-leaving'))),
+          );
+        },
+        still ? 0 : 300,
+      );
+    };
+
+    for (const b of buttons) b.addEventListener('click', () => apply(b.dataset.filter ?? 'all'));
+  }
+</script>

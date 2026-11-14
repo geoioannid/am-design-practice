@@ -1,0 +1,30 @@
+---
+/**
+ * The AM monogram, traced from her logo as two strokes: the zig-zag "M" rising
+ * into the tall "A", and the long crossbar. The stroke keeps a fixed screen
+ * width (non-scaling-stroke) so the line stays hairline at any size, and it
+ * inherits `currentColor` so it reads white over the hero and navy elsewhere.
+ */
+interface Props {
+  class?: string;
+  strokeWidth?: number;
+  title?: string;
+}
+const { class: className = '', strokeWidth = 1.25, title } = Astro.props;
+---
+
+<svg
+  viewBox="350 10 700 870"
+  fill="none"
+  stroke="currentColor"
+  stroke-width={strokeWidth}
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  class={className}
+  role={title ? 'img' : undefined}
+  aria-hidden={title ? undefined : 'true'}
+>
+  {title && <title>{title}</title>}
+  <polyline points="363,675 397,370 460,638 509,22 621,863" vector-effect="non-scaling-stroke" />
+  <line x1="456" y1="352" x2="1038" y2="451" vector-effect="non-scaling-stroke" />
+</svg>

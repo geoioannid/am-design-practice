@@ -1,0 +1,85 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Astro caches processed image variants here, keyed by source content —
+      # restoring it means a build only re-encodes new or changed photos.
+      - name: Cache processed images
+        uses: actions/cache@v4
+        with:
+          path: node_modules/.astro
+          key: astro-images-${{ hashFiles('src/uploads/**') }}
+          restore-keys: |
+            astro-images-
+
+      # The site's final URL comes from GitHub Pages itself: the Pages API
+      # reports the github.io project URL until a custom domain is configured
+      # in Settings → Pages, and the custom domain afterwards. Astro derives
+      # `site` + `base` from it (astro.config.mjs), so canonical/OG/sitemap
+      # URLs always match the host that is actually live — migrating to the
+      # custom domain needs no code change, just re-running this workflow.
+      - name: Resolve site URL from GitHub Pages
+        id: site-url
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          url="$(gh api "/repos/${{ github.repository }}/pages" --jq .html_url || true)"
+          if [ -z "$url" ] || [ "$url" = "null" ]; then
+            repo="${{ github.repository }}"
+            echo "url=https://${repo%%/*,,}.github.io/${repo##*/,,}" >> "$GITHUB_OUTPUT"
+          else
+            echo "url=$url" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build
+        run: npm run build
+        env:
+          SITE_URL: ${{ steps.site-url.outputs.url }}
+          # Optional: set in repo Settings → Secrets and variables → Actions → Variables.
+          # See SETUP.md step 7.
+          PUBLIC_CF_BEACON_TOKEN: ${{ vars.PUBLIC_CF_BEACON_TOKEN }}
+
+      - name: Upload site artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

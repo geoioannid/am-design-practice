@@ -1,0 +1,51 @@
+---
+import { getImage } from 'astro:assets';
+import { resolveModel, resolveUpload } from '../lib/images';
+
+interface Props {
+  model: string;
+  /** Upload path of the still image shown until the model loads (and if it can't). */
+  poster: string;
+  alt: string;
+}
+const { model, poster, alt } = Astro.props;
+
+const posterImg = await getImage({ src: resolveUpload(poster), width: 1200, format: 'webp' });
+---
+
+<!--
+  <model-viewer> is bundled by Vite into this page's script only, so pages
+  without a model never download it. Until the element upgrades (or if WebGL
+  is missing) the poster image is what's on screen. loading="eager" because
+  the model is the first thing on its page, above the fold.
+-->
+<div class="relative aspect-[4/5] bg-mist md:aspect-square">
+  <model-viewer
+    src={resolveModel(model)}
+    poster={posterImg.src}
+    alt={alt}
+    loading="eager"
+    reveal="auto"
+    camera-controls
+    auto-rotate
+    auto-rotate-delay="1500"
+    rotation-per-second="12deg"
+    interaction-prompt="auto"
+    touch-action="pan-y"
+    shadow-intensity="0.8"
+    shadow-softness="1"
+    exposure="1"
+    environment-image="neutral"
+    class="absolute inset-0 h-full w-full"
+    style="--poster-color: transparent; background-color: transparent;"
+  ></model-viewer>
+  <p class="label pointer-events-none absolute bottom-4 left-4 text-muted-foreground">drag to rotate</p>
+</div>
+
+<script>
+  import '@google/model-viewer';
+  // Respect reduced-motion: keep the model still unless the visitor turns it.
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    document.querySelectorAll('model-viewer').forEach((el) => el.removeAttribute('auto-rotate'));
+  }
+</script>

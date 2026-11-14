@@ -1,0 +1,175 @@
+# Sveltia CMS configuration (Decap-compatible).
+# Login: open /admin and use "Sign In with Token" with a GitHub personal
+# access token that has Contents read/write on this repository.
+# See SETUP.md steps 4–5 for the one-time setup.
+
+backend:
+  name: github
+  repo: geoioannid/am-design-practice
+  branch: main
+  # Token-only login: OAuth without a helper app would fall back to Netlify's
+  # dead endpoint. See SETUP.md step 5.
+  auth_methods: [token]
+
+site_url: https://amdesignpractice.com
+
+# Uploads are stored in src/uploads (not public/) so Astro's build generates
+# responsive variants from them; content references them by their public
+# /uploads/... path, which resolveUpload()/resolveModel() map back at build time.
+media_folder: src/uploads
+public_folder: /uploads
+
+# Every uploaded photo is compressed in the browser before it is committed:
+# converted to WebP at quality 85, longest side capped at 2560px, EXIF stripped.
+# Originals never enter the repository. (3D models are not touched.)
+media_libraries:
+  all:
+    transformations:
+      raster_image:
+        format: webp
+        quality: 85
+        width: 2560
+        height: 2560
+
+collections:
+  - name: projects
+    label: Projects
+    label_singular: Project
+    description: >-
+      One entry per project. Drop in camera-original photos — every upload is
+      converted to WebP, capped at 2560px and stripped of location data before
+      it is saved. On the home page projects appear as square tiles (the cover
+      is center-cropped to 4:5 portrait); a featured project gets a large 2×2 tile.
+    folder: src/content/projects
+    create: true
+    slug: '{{slug}}'
+    sortable_fields: [order, title, category, year]
+    summary: '{{title}} — {{category}} (order {{order}})'
+    view_groups:
+      - { label: Category, field: category }
+    fields:
+      - { label: Title, name: title, widget: string }
+      - label: Category
+        name: category
+        widget: select
+        # Must match CATEGORIES in src/lib/categories.ts.
+        options: [Architecture, Interior, Furniture]
+        hint: Used by the filters above the home page grid.
+      - label: Featured
+        name: featured
+        widget: boolean
+        default: false
+        required: false
+        hint: Shows the project as a large 2×2 tile on the home page. One or two featured projects look best.
+      - label: Order
+        name: order
+        widget: number
+        default: 100
+        hint: Position in the home page grid — lower numbers come first (10, 20, 30…).
+      - label: Main image
+        name: cover
+        widget: image
+        hint: >-
+          The home page tile (cropped to 4:5 portrait, like Instagram — keep the subject central) and
+          the big image at the top of the project page.
+      - label: 3D model (optional)
+        name: model
+        widget: file
+        required: false
+        accept: .glb,model/gltf-binary
+        choose_url: false
+        # Sveltia commits a file in one GitHub API request; much past ~10 MB
+        # that can fail on slow connections (docs/research/3d-models-for-web.md §11).
+        media_libraries:
+          default:
+            config:
+              max_file_size: 8000000
+        hint: >-
+          A single compressed .glb file — aim for 2–3 MB, 8 MB is the upload limit.
+          When set, it replaces the main image at the top of the project page and
+          visitors can rotate it; the main image is shown while it loads and as a
+          fallback. See "Uploading 3D models" in SETUP.md for exporting from Rhino
+          and compressing.
+      - label: 3D model description
+        name: modelAlt
+        widget: string
+        required: false
+        hint: 'One sentence describing the model for screen readers, e.g. "Oak sideboard with three doors". Only used when a 3D model is set.'
+      - { label: Location, name: location, widget: string, required: false }
+      - { label: Year, name: year, widget: string, required: false }
+      - { label: Status, name: status, widget: string, required: false, hint: 'e.g. Built, In progress, Prototype, Study' }
+      - { label: Client / collaborators, name: client, widget: string, required: false }
+      - label: Description
+        name: description
+        widget: text
+        required: false
+        hint: Shown next to the main image. Leave a blank line between paragraphs.
+      - label: Page content
+        name: blocks
+        widget: list
+        required: false
+        hint: Build the page top-to-bottom — alternate text sections and image sets freely.
+        types:
+          - name: text
+            label: Text section
+            widget: object
+            summary: 'Text: {{title}}'
+            fields:
+              - { label: Small label, name: subtitle, widget: string, required: false, hint: 'Shown above the title, e.g. Concept, Process' }
+              - { label: Title, name: title, widget: string, required: false }
+              - label: Text
+                name: text
+                widget: text
+                hint: Leave a blank line between paragraphs.
+          - name: images
+            label: Image set
+            widget: object
+            summary: Image set
+            fields:
+              - label: Images
+                name: images
+                widget: list
+                hint: >-
+                  Photos pair up in the order you add them: two sit side-by-side
+                  when at least one of the pair is portrait, otherwise each goes
+                  full width. Leave an odd one out and it shows full width alone.
+                fields:
+                  - { label: Image, name: image, widget: image }
+                  - { label: Caption, name: caption, widget: string, required: false, hint: Shown under the image; also used as its alt text. }
+
+  - name: site
+    label: Home, About & Contact
+    description: The home page hero, the About page and the contact details in the footer.
+    files:
+      - name: home
+        label: Home page
+        file: src/content/home.yml
+        fields:
+          - { label: Hero title, name: heroTitle, widget: string, default: am design practice }
+          - { label: Hero subtitle, name: heroSubtitle, widget: string, required: false }
+          - label: Hero image
+            name: heroImage
+            widget: image
+            hint: Fills the whole screen behind the title and moves slightly as you scroll. A calm, not-too-busy photo works best; it is darkened a little so the white title stays readable.
+          - { label: Intro line, name: intro, widget: text, required: false, hint: Short line shown above the project grid. }
+      - name: about
+        label: About page
+        file: src/content/about.yml
+        fields:
+          - { label: Portrait, name: portrait, widget: image, hint: Shown beside the bio; also the social-share image for this page. }
+          - { label: Heading, name: heading, widget: string, required: false }
+          - label: Bio
+            name: bio
+            widget: text
+            hint: Leave a blank line between paragraphs.
+          - label: Disciplines
+            name: disciplines
+            widget: list
+            field: { label: Discipline, name: discipline, widget: string }
+      - name: settings
+        label: Contact & footer
+        file: src/content/settings.yml
+        fields:
+          - { label: Email, name: email, widget: string }
+          - { label: Instagram URL, name: instagram, widget: string, required: false }
+          - { label: City, name: city, widget: string, required: false }

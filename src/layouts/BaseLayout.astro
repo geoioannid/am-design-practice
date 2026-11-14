@@ -1,0 +1,144 @@
+---
+import '@fontsource/space-mono/400.css';
+import '@fontsource/space-mono/700.css';
+import '@fontsource/source-sans-3/300.css';
+import '@fontsource/source-sans-3/400.css';
+import '../styles/global.css';
+import { getCollection } from 'astro:content';
+import { getImage } from 'astro:assets';
+import { resolveUpload } from '../lib/images';
+import { withBase } from '../lib/url';
+
+interface Props {
+  title: string;
+  description?: string;
+  image?: string;
+  noindex?: boolean;
+  /** Page-specific JSON-LD, rendered after the site-wide Organization block. */
+  jsonLd?: object | object[];
+}
+
+const {
+  title,
+  description = 'am design practice — architecture, interiors and bespoke furniture by Angeliki Mathiopoulou, designed in Greece.',
+  image,
+  noindex = false,
+  jsonLd,
+} = Astro.props;
+
+const site = Astro.site ?? new URL('https://amdesignpractice.com');
+const canonical = new URL(Astro.url.pathname, site);
+// Social scrapers don't reliably fetch WebP/AVIF — no major platform documents
+// either as og:image — so the share image is a dedicated JPEG card, center-
+// cropped to 1200×630: Meta and LinkedIn want ~1.91:1, X's large card 2:1,
+// WhatsApp needs ≥300px wide and under 600KB. Pages without a photo share the
+// branded fallback card. getImage()'s URL already includes the base path.
+const ogVariant = image
+  ? await getImage({
+      src: resolveUpload(image),
+      width: 1200,
+      height: 630,
+      fit: 'cover',
+      format: 'jpeg',
+      quality: 80,
+    })
+  : undefined;
+const ogImage = new URL(ogVariant?.src ?? withBase('/og-default.jpg'), site);
+const ogWidth = ogVariant?.attributes.width ?? 1200;
+const ogHeight = ogVariant?.attributes.height ?? 630;
+const ogAlt = `${title} — featured photograph`;
+
+const settings = (await getCollection('settings'))[0]?.data;
+const organization = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: 'am design practice',
+  url: site.href,
+  logo: new URL(withBase('/apple-touch-icon.png'), site).href,
+  ...(settings?.email ? { email: settings.email } : {}),
+  ...(settings?.city
+    ? { address: { '@type': 'PostalAddress', addressLocality: settings.city } }
+    : {}),
+  ...(settings?.instagram ? { sameAs: [settings.instagram] } : {}),
+};
+const extraLd = jsonLd === undefined ? [] : Array.isArray(jsonLd) ? jsonLd : [jsonLd];
+const beacon = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="generator" content={Astro.generator} />
+    <meta name="theme-color" content="#1f2650" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    {noindex && <meta name="robots" content="noindex" />}
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" href={withBase('/favicon.ico')} sizes="any" />
+    <link rel="icon" href={withBase('/favicon.svg')} type="image/svg+xml" />
+    <link rel="apple-touch-icon" href={withBase('/apple-touch-icon.png')} />
+    <link rel="sitemap" href={withBase('/sitemap-index.xml')} />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="am design practice" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content={ogWidth} />
+    <meta property="og:image:height" content={ogHeight} />
+    <meta property="og:image:alt" content={ogAlt} />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+    <meta name="twitter:image:alt" content={ogAlt} />
+    <script type="application/ld+json" set:html={JSON.stringify(organization)} />
+    {extraLd.map((obj) => <script type="application/ld+json" set:html={JSON.stringify(obj)} />)}
+  </head>
+  <body>
+    <slot />
+
+    <noscript>
+      <style>
+        [data-fade] {
+          opacity: 1 !important;
+          transform: none !important;
+        }
+      </style>
+    </noscript>
+
+    <script>
+      const els = document.querySelectorAll<HTMLElement>('[data-fade]');
+      const io = new IntersectionObserver(
+        (entries) => {
+          for (const e of entries) {
+            if (e.isIntersecting) {
+              e.target.classList.add('fade-in-up-visible');
+              io.unobserve(e.target);
+            }
+          }
+        },
+        { rootMargin: '0px 0px -10% 0px' },
+      );
+      els.forEach((el) => {
+        const delay = Number(el.dataset.fadeDelay ?? 0);
+        if (delay) el.style.transitionDelay = `${delay}ms`;
+        io.observe(el);
+      });
+    </script>
+
+    {
+      beacon && (
+        <script
+          is:inline
+          defer
+          src="https://static.cloudflareinsights.com/beacon.min.js"
+          data-cf-beacon={JSON.stringify({ token: beacon })}
+        />
+      )
+    }
+  </body>
+</html>
