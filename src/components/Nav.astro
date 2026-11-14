@@ -26,7 +26,7 @@ const { overHero = false } = Astro.props;
     </a>
     <ul class="flex items-center gap-6 md:gap-10">
       <li><a href={withBase('/about/')} class="label transition-opacity hover:opacity-60">about</a></li>
-      <li><a href="#contact" class="label transition-opacity hover:opacity-60">contact</a></li>
+      <li><a href={withBase('/about/#contact')} class="label transition-opacity hover:opacity-60">contact</a></li>
     </ul>
   </nav>
 </header>
