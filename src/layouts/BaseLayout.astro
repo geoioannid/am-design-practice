@@ -121,6 +121,7 @@ const beacon = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
     <meta name="twitter:image:alt" content={ogAlt} />
     <script type="application/ld+json" set:html={JSON.stringify(organization)} />
     {extraLd.map((obj) => <script type="application/ld+json" set:html={JSON.stringify(obj)} />)}
+    <slot name="head" />
   </head>
   <body>
     <slot />

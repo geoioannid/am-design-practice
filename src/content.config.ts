@@ -36,6 +36,7 @@ const projects = defineCollection({
     cover: z.string(),
     model: optionalString,
     modelAlt: optionalString,
+    modelOrbit: optionalString,
     location: z.coerce.string().default(''),
     year: z.coerce.string().default(''),
     status: optionalString,

@@ -11,6 +11,7 @@ could not confirm in a primary source are marked **[unverified]**.
 - `astro.config.mjs` — static site; `site`/`base` derived from `SITE_URL` (GitHub Pages project URL until a custom domain is set).
 - `src/components/ModelViewer.astro` — already renders `<model-viewer>` with `poster`, `alt`, `loading="eager"`, `camera-controls`, `auto-rotate`, `environment-image="neutral"`, `shadow-intensity`, imports `@google/model-viewer` in a processed `<script>`, and removes `auto-rotate` under `prefers-reduced-motion: reduce`.
 - `src/content.config.ts` — optional `model` string field (public URL path).
+- *Since this research:* the viewer gained a responsive poster, deferred loading, camera limits, reset/full-screen controls and an optional `modelOrbit` starting angle; `public/admin/preview.js` renders the model live in the Sveltia preview pane.
 - `src/uploads/sheen-chair.glb` — 4.13 MB sample model (used for the test run in §6).
 - `public/admin/index.html` — Sveltia CMS 0.227.2 from unpkg (note: its `<title>` still says "Anna Tsoka Architecture").
 

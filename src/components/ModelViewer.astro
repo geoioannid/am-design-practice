@@ -1,5 +1,5 @@
 ---
-import { getImage } from 'astro:assets';
+import { Picture } from 'astro:assets';
 import { resolveModel, resolveUpload } from '../lib/images';
 
 interface Props {
@@ -7,26 +7,31 @@ interface Props {
   /** Upload path of the still image shown until the model loads (and if it can't). */
   poster: string;
   alt: string;
+  /** Starting camera orbit ("30deg 75deg 105%"), set via the CMS preview. */
+  orbit?: string;
 }
-const { model, poster, alt } = Astro.props;
+const { model, poster, alt, orbit } = Astro.props;
 
-const posterImg = await getImage({ src: resolveUpload(poster), width: 1200, format: 'webp' });
+// Front three-quarter view. Keep in sync with DEFAULT_ORBIT in public/admin/preview.js.
+const cameraOrbit = orbit || '30deg 75deg 105%';
 ---
 
 <!--
-  <model-viewer> is bundled by Vite into this page's script only, so pages
-  without a model never download it. Until the element upgrades (or if WebGL
-  is missing) the poster image is what's on screen. loading="eager" because
-  the model is the first thing on its page, above the fold.
+  The poster is a responsive <picture> in the poster slot, so it is the LCP
+  element exactly like the plain cover image on pages without a model. The
+  ~1 MB <model-viewer> bundle is imported after the page has loaded (and only
+  on click when the visitor has Save-Data on); until the element upgrades the
+  slotted picture renders as ordinary content.
 -->
-<div class="relative aspect-[4/5] bg-mist md:aspect-square">
+<div class="model-frame relative aspect-[4/5] bg-mist md:aspect-square" data-model-frame>
   <model-viewer
     src={resolveModel(model)}
-    poster={posterImg.src}
     alt={alt}
     loading="eager"
     reveal="auto"
     camera-controls
+    camera-orbit={cameraOrbit}
+    max-camera-orbit="auto 90deg auto"
     auto-rotate
     auto-rotate-delay="1500"
     rotation-per-second="12deg"
@@ -38,14 +43,237 @@ const posterImg = await getImage({ src: resolveUpload(poster), width: 1200, form
     environment-image="neutral"
     class="absolute inset-0 h-full w-full"
     style="--poster-color: transparent; background-color: transparent;"
-  ></model-viewer>
-  <p class="label pointer-events-none absolute bottom-4 left-4 text-muted-foreground">drag to rotate</p>
+  >
+    <div slot="poster" class="absolute inset-0">
+      <Picture
+        src={resolveUpload(poster)}
+        alt=""
+        layout="constrained"
+        width={680}
+        formats={['avif', 'webp']}
+        fallbackFormat="webp"
+        fetchpriority="high"
+        loading="eager"
+        decoding="sync"
+        class="block h-full w-full object-contain"
+      />
+    </div>
+    <div slot="progress-bar" class="progress" aria-hidden="true"><span data-progress></span></div>
+  </model-viewer>
+
+  <button type="button" class="load-button label" data-load hidden>load 3D model</button>
+
+  <p class="hint label pointer-events-none absolute bottom-4 left-4 text-muted-foreground" data-hint>
+    drag to rotate
+  </p>
+
+  <div class="controls absolute right-3 bottom-3 flex gap-1">
+    <button type="button" class="control" data-reset aria-label="Reset view" title="Reset view" hidden>
+      <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"
+        ><path d="M4 12a8 8 0 1 0 2.34-5.66M4 4v4h4" fill="none" stroke="currentColor" stroke-width="1.5"
+        ></path></svg
+      >
+    </button>
+    <button type="button" class="control" data-fullscreen aria-label="Full screen" title="Full screen" hidden>
+      <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" class="icon-enter"
+        ><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="1.5"
+        ></path></svg
+      >
+      <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" class="icon-exit"
+        ><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5" fill="none" stroke="currentColor" stroke-width="1.5"
+        ></path></svg
+      >
+    </button>
+  </div>
 </div>
 
+<style>
+  .progress {
+    position: absolute;
+    inset: auto 0 0 0;
+    height: 2px;
+    pointer-events: none;
+    transition: opacity 0.4s;
+  }
+  .progress span {
+    display: block;
+    height: 100%;
+    width: 0;
+    background: var(--foreground);
+    transition: width 0.2s;
+  }
+  .progress.done {
+    opacity: 0;
+  }
+
+  /* Hint and controls only make sense once the model is on screen. */
+  .hint,
+  .controls {
+    opacity: 0;
+    transition: opacity 0.5s;
+  }
+  [data-state='ready'] .hint,
+  [data-state='ready'] .controls {
+    opacity: 1;
+  }
+  [data-state='ready'][data-touched] .hint {
+    opacity: 0;
+  }
+  [data-state='error'] .controls,
+  [data-state='error'] .hint {
+    display: none;
+  }
+
+  .control,
+  .load-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--foreground);
+    background: rgb(255 255 255 / 0.8);
+    backdrop-filter: blur(4px);
+    transition: background 0.2s;
+  }
+  .control {
+    width: 44px;
+    height: 44px;
+  }
+  .control:hover,
+  .load-button:hover {
+    background: #fff;
+  }
+  .control:focus-visible,
+  .load-button:focus-visible {
+    outline: 1px solid var(--foreground);
+    outline-offset: 2px;
+  }
+  .control[hidden],
+  .load-button[hidden] {
+    display: none;
+  }
+  .load-button {
+    position: absolute;
+    left: 50%;
+    bottom: 1.5rem;
+    transform: translateX(-50%);
+    padding: 0 1.25rem;
+    min-height: 44px;
+  }
+
+  .icon-exit {
+    display: none;
+  }
+  .model-frame:fullscreen {
+    aspect-ratio: auto;
+    width: 100%;
+    height: 100%;
+    background: var(--background);
+  }
+  .model-frame:fullscreen .icon-enter {
+    display: none;
+  }
+  .model-frame:fullscreen .icon-exit {
+    display: block;
+  }
+</style>
+
 <script>
-  import '@google/model-viewer';
-  // Respect reduced-motion: keep the model still unless the visitor turns it.
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    document.querySelectorAll('model-viewer').forEach((el) => el.removeAttribute('auto-rotate'));
+  type ModelViewerEl = HTMLElement & {
+    cameraOrbit: string;
+    fieldOfView: string;
+    cameraTarget: string;
+  };
+
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const saveData = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData;
+  const load = () => import('@google/model-viewer');
+
+  document.querySelectorAll<HTMLElement>('[data-model-frame]').forEach((frame) => {
+    const viewer = frame.querySelector<ModelViewerEl>('model-viewer')!;
+    const hint = frame.querySelector<HTMLElement>('[data-hint]')!;
+    const reset = frame.querySelector<HTMLButtonElement>('[data-reset]')!;
+    const fullscreen = frame.querySelector<HTMLButtonElement>('[data-fullscreen]')!;
+    const progress = frame.querySelector<HTMLElement>('.progress')!;
+    const bar = frame.querySelector<HTMLElement>('[data-progress]')!;
+    const initialOrbit = viewer.getAttribute('camera-orbit')!;
+
+    // Keep the model still unless the visitor turns it; the default prompt wiggles it too.
+    if (reducedMotion) {
+      viewer.removeAttribute('auto-rotate');
+      viewer.setAttribute('interaction-prompt', 'none');
+    }
+
+    hint.textContent = window.matchMedia('(pointer: coarse)').matches
+      ? 'drag to rotate · pinch to zoom'
+      : 'drag to rotate · then scroll to zoom';
+
+    viewer.addEventListener('progress', (e) => {
+      const p = (e as CustomEvent<{ totalProgress: number }>).detail.totalProgress;
+      bar.style.width = `${p * 100}%`;
+      progress.classList.toggle('done', p >= 1);
+    });
+    viewer.addEventListener('load', () => (frame.dataset.state = 'ready'));
+    // Load failure or lost WebGL: the poster stays, the controls go.
+    viewer.addEventListener('error', () => (frame.dataset.state = 'error'));
+
+    viewer.addEventListener('camera-change', (e) => {
+      if ((e as CustomEvent<{ source: string }>).detail.source !== 'user-interaction') return;
+      // Once turned, the model stays where the visitor left it.
+      viewer.removeAttribute('auto-rotate');
+      frame.dataset.touched = '';
+      reset.hidden = false;
+    });
+
+    // A large viewer in the page flow shouldn't swallow page scrolling: the
+    // wheel zooms only once the visitor has grabbed the model (until the pointer
+    // leaves it) or in full screen. Stopping the event before it reaches
+    // <model-viewer> leaves the browser to scroll the page.
+    let engaged = false;
+    viewer.addEventListener('pointerdown', () => (engaged = true));
+    frame.addEventListener('pointerleave', () => (engaged = false));
+    frame.addEventListener(
+      'wheel',
+      (e) => {
+        if (!engaged && document.fullscreenElement !== frame) e.stopPropagation();
+      },
+      { capture: true },
+    );
+
+    reset.addEventListener('click', () => {
+      viewer.cameraOrbit = initialOrbit;
+      viewer.cameraTarget = 'auto auto auto';
+      viewer.fieldOfView = 'auto';
+      reset.hidden = true;
+    });
+
+    if (document.fullscreenEnabled) {
+      fullscreen.hidden = false;
+      fullscreen.addEventListener('click', () => {
+        if (document.fullscreenElement) document.exitFullscreen();
+        else frame.requestFullscreen();
+      });
+      document.addEventListener('fullscreenchange', () => {
+        const on = document.fullscreenElement === frame;
+        fullscreen.setAttribute('aria-label', on ? 'Exit full screen' : 'Full screen');
+        fullscreen.title = on ? 'Exit full screen' : 'Full screen';
+      });
+    }
+
+    // Save-Data: nothing heavy downloads until the visitor asks for the model.
+    if (saveData) {
+      const button = frame.querySelector<HTMLButtonElement>('[data-load]')!;
+      button.hidden = false;
+      button.addEventListener('click', () => {
+        button.hidden = true;
+        load();
+      });
+    }
+  });
+
+  // Let the poster and the rest of the page finish first, then fetch the viewer.
+  if (!saveData) {
+    const start = () => ('requestIdleCallback' in window ? requestIdleCallback(load, { timeout: 2000 }) : load());
+    if (document.readyState === 'complete') start();
+    else window.addEventListener('load', start, { once: true });
   }
 </script>
