@@ -4,3 +4,5 @@ instagram: https://www.instagram.com/am_designpractice/
 linkedin: https://www.linkedin.com/
 etsy: https://www.etsy.com/
 city: Greece
+# Off until real content is in: search engines are asked not to index the site.
+searchIndexing: false

@@ -92,6 +92,8 @@ const settings = defineCollection({
     instagram: z.string().default(''),
     linkedin: z.string().default(''),
     etsy: z.string().default(''),
+    /** Off while the site holds placeholder content: every page is noindex. */
+    searchIndexing: z.boolean().default(false),
     city: z.string().default(''),
   }),
 });

@@ -175,3 +175,13 @@ collections:
           - { label: LinkedIn URL, name: linkedin, widget: string, required: false, hint: 'Full profile link, e.g. https://www.linkedin.com/in/your-name/' }
           - { label: Etsy shop URL, name: etsy, widget: string, required: false, hint: 'Full shop link, e.g. https://www.etsy.com/shop/YourShop' }
           - { label: City, name: city, widget: string, required: false }
+          - label: Allow search engines
+            name: searchIndexing
+            widget: boolean
+            default: false
+            required: false
+            hint: >-
+              Off = Google and other search engines are asked not to list the site
+              (use while content is still placeholder). Turn on when the site is
+              ready to be found; it takes effect after the next rebuild, and Google
+              may take days to weeks to pick it up.

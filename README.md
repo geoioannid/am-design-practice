@@ -21,7 +21,10 @@ Same stack as `anna-tsoka-architecture`.
 > and hero are placeholders built from her Instagram posts (images ~1080px wide —
 > real uploads should be ≥2560px). The email `hello@amdesignpractice.com`, the
 > LinkedIn and Etsy links (generic site homepages) and the domain
-> `amdesignpractice.com` are placeholders too. The 3D model on
+> `amdesignpractice.com` are placeholders too. Because of this, **search engines
+> are blocked** (`searchIndexing: false` in `settings.yml`, *Allow search
+> engines* in `/admin` → Contact & footer) — every page is `noindex, nofollow`
+> and `robots.txt` omits the sitemap. Turn it on when the real content is in. The 3D model on
 > *Curved lounge* is the CC0 Khronos sample "SheenChair" (Wayfair).
 
 ## Local development

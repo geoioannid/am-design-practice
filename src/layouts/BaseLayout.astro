@@ -58,6 +58,8 @@ const ogHeight = ogVariant?.attributes.height ?? 630;
 const ogAlt = `${title} — featured photograph`;
 
 const settings = (await getCollection('settings'))[0]?.data;
+// Site-wide switch (CMS → Contact & footer → Allow search engines).
+const blockSearch = noindex || !settings?.searchIndexing;
 const home = new URL(withBase('/'), site).href;
 const sameAs = profileUrls(socialLinks(settings));
 const organization = {
@@ -93,7 +95,7 @@ const beacon = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
     <title>{title}</title>
     <meta name="description" content={metaDesc} />
     <meta name="author" content="Angeliki Mathiopoulou" />
-    {noindex && <meta name="robots" content="noindex" />}
+    {blockSearch && <meta name="robots" content="noindex, nofollow" />}
     <link rel="canonical" href={canonical} />
     <link rel="preload" href={monoFont} as="font" type="font/woff2" crossorigin />
     <link rel="preload" href={sansFont} as="font" type="font/woff2" crossorigin />

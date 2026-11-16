@@ -111,7 +111,8 @@ back.
   short intro line above the grid.
 - **About page** — portrait, heading, bio (blank line = new paragraph) and
   the disciplines list.
-- **Contact & footer** — email, Instagram, LinkedIn and Etsy links, city.
+- **Contact & footer** — email, Instagram, LinkedIn and Etsy links, city,
+  and **Allow search engines** (off until the site is ready to be found).
 
 Photos: just drop in the full-size camera JPEGs (even HEIC from an iPhone).
 They are automatically converted to WebP, resized to max 2560px, and
