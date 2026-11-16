@@ -151,25 +151,149 @@ screenshot of the model from the same angle. Full background and sources:
 **Targets:** under **2 MB** (3 MB max; the CMS refuses over 8 MB), roughly
 50k–150k triangles, textures no larger than 2048px.
 
-From Rhino 8:
+There are two versions of the Rhino 8 steps below: a **short checklist** for
+when you've done it before, and a **detailed walkthrough** for the first time
+or when something goes wrong. They describe the same process.
 
-1. Work on a copy. Delete or hide construction lines, 2D linework,
-   dimensions, site context and hidden internal parts.
-2. Give parts simple materials (fewer than ~10) or rely on display colours.
-3. *File ▸ Properties ▸ Mesh* → **Jagged and faster**; if curves look
-   faceted, use *Custom* and raise *Density* slightly. Tick *Simple planes*.
-4. Select the objects → *File ▸ Export Selected* → **glTF Binary (.glb)**,
-   short lowercase name with hyphens (`oak-sideboard.glb`).
-5. Export options: ✅ Map Rhino Z to glTF Y · ✅ Export materials ·
-   ✅ Use display color for objects with no material · ✅ **Use Draco
-   compression**. Units become metres automatically.
-6. Check the size. Too big → coarser mesh setting and re-export, or ask the
-   developer to run the compression below.
-7. Preview: drag the file into <https://modelviewer.dev/editor/>, check it is
-   the right way up, and use **POSTER** there to download a still for the
-   Main image if you have no render.
-8. In `/admin`: upload the `.glb` in **3D model**, write one sentence in
-   **3D model description** ("Oak sideboard with three doors"), Save.
+Angeliki sees the same guide inside the CMS: the **How to upload a 3D model
+from Rhino →** link under the *3D model* field opens it in a dialog, with
+*Quick checklist* and *Step by step* tabs. Its text is in
+`public/admin/3d-model-guide.html` — when you change one, change the other.
+
+### 9a. Short version (checklist)
+
+1. **Copy the file**, then delete everything visitors shouldn't see: lines,
+   dimensions, site context, hidden internal parts.
+2. **Simple materials** (under ~10), or just display colours.
+3. **Mesh settings:** *File ▸ Properties ▸ Mesh* → **Jagged and faster**,
+   tick **Simple planes**.
+4. **Export:** select the objects → *File ▸ Export Selected* → **glTF Binary
+   (.glb)**, name like `oak-sideboard.glb`.
+5. **Export options:** ✅ Map Rhino Z to glTF Y · ✅ Export materials ·
+   ✅ Use display color… · ✅ **Use Draco compression**.
+6. **Size check:** under 2 MB is ideal, 3 MB at most. Too big → see 9b, step 7.
+7. **Main image:** have a render or screenshot from the angle you'll use.
+8. **In `/admin`** → the project → upload the `.glb` in **3D model** → one
+   sentence in **3D model description**.
+9. **Starting angle:** turn the model in the preview → **Copy** → paste into
+   **3D model starting angle** (or leave empty) → **Save**.
+10. **Check the live page** in ~2 minutes.
+
+### 9b. Detailed version (walkthrough)
+
+**Before you start.** Work on a **copy** of the Rhino file (*File ▸ Save
+As…*, e.g. `oak-sideboard-web.3dm`), so nothing you delete for the web is
+lost from the real project.
+
+**1. Clean up the model.** Everything in the file can end up in the export,
+and every hidden part makes it heavier. Delete or hide:
+- construction lines, curves, 2D linework, dimensions, text and hatches;
+- site context, floors, walls or people that aren't part of the piece;
+- internal parts nobody will ever see (screws, dowels, hidden joinery),
+  unless they matter to the design.
+
+A 3D model of a chair should be only the chair. The site adds a soft shadow
+underneath, so you don't need a floor.
+
+**2. Keep materials simple.** The web viewer understands colour, roughness
+and metal, not Rhino's full render materials. Either:
+- give each part a simple material (a wood, a fabric, a metal — fewer than
+  about 10 in total), or
+- skip materials and just set each object's **display colour**; the export
+  turns it into a plain material.
+
+Image textures (wood grain photos etc.) work but add size; keep them at
+2048px or smaller.
+
+**3. Set how detailed the mesh is.** Rhino turns surfaces into triangles
+when it exports, and these settings decide how many:
+1. *File ▸ Properties ▸ **Mesh***.
+2. Choose **Jagged and faster**.
+3. Tick **Simple planes** (flat faces get as few triangles as possible).
+4. If curved edges later look faceted (step 6), come back, choose
+   **Custom** and move **Density** up a little. Small steps — each one can
+   double the file size.
+
+To see the count, select the objects and run the **PolygonCount** command.
+Aim for about 50,000–150,000.
+
+**4. Export.**
+1. Select only the objects that make up the piece.
+2. *File ▸ **Export Selected***.
+3. File type: **glTF Binary (\*.glb)**.
+4. Name it with lowercase letters and hyphens, no spaces:
+   `oak-sideboard.glb`, `curved-lounge.glb`.
+
+**5. Export options.** In the dialog that appears, make sure these are on:
+- ✅ **Map Rhino Z to glTF Y** — keeps the model the right way up.
+- ✅ **Export materials**
+- ✅ **Use display color for objects with no material set**
+- ✅ **Use Draco compression** — off by default; this is the one that
+  shrinks the file the most. Leave its level and the numbers below it as
+  they are.
+
+Units don't matter: the export converts them to metres automatically.
+
+**6. Check the file.**
+- **Size:** in Finder, select the file and press ⌘I (*Get Info*). Under
+  2 MB is ideal, up to 3 MB is fine, the CMS refuses anything over 8 MB.
+- **Look:** drag the file into <https://modelviewer.dev/editor/>. Check it is
+  the right way up, the colours look right and curves aren't faceted.
+
+**7. If it's too big**, try in this order:
+1. Go back to step 1 — something hidden is often still in there.
+2. Step 3 — make sure it's **Jagged and faster**, or lower **Density**.
+3. For objects that are already meshes, Rhino's **ReduceMesh** command
+   cuts their triangle count (try 50%).
+4. Shrink image textures to 1024px.
+5. Still too big: send the `.glb` to the developer, who can compress it
+   further (the command below).
+
+**8. Prepare the Main image.** It is shown while the model loads, on phones
+without 3D support, and as the home-page tile — so it should look like the
+model from the angle you'll choose in step 10. A Rhino render works, or a
+viewport capture (*ViewCaptureToFile*). No render? In the
+modelviewer.dev editor, turn the model to a nice angle and click
+**POSTER** to download a still.
+
+**9. Upload in `/admin`.**
+1. Open `/admin` → **Projects** → the project (or **New Project**).
+2. Set the **Main image** (step 8) if it isn't there yet.
+3. **3D model (optional)** → **Browse** → **Upload** → choose the `.glb` →
+   **Insert**.
+4. **3D model description**: one sentence describing the object for
+   visitors who use screen readers, e.g. *"Oak sideboard with three
+   doors and turned legs"*.
+
+**10. Choose the starting angle.** The **Preview** pane on the right shows
+the model as visitors will see it.
+1. Drag to turn it, scroll to zoom, until it shows the view you want people
+   to see first.
+2. Click **Copy** under the model (if nothing is copied, the value is
+   highlighted — press ⌘C).
+3. Click into **3D model starting angle** and paste (⌘V). The preview jumps
+   to that view, so you can check it. **Reset** goes back to the saved angle.
+
+Leave the field empty and visitors get a front three-quarter view.
+
+**11. Save and check.** Click **Save**. The site rebuilds and the page is
+live in about 2 minutes. Open it on your phone too: the main image should
+appear first, then the model fades in.
+
+**Common problems**
+- *Upside down or lying on its side:* re-export with **Map Rhino Z to
+  glTF Y** ticked.
+- *Everything is grey or white:* materials didn't come through — tick
+  **Export materials** and **Use display color…**, or switch the parts to
+  simple materials / display colours.
+- *Curves look faceted:* raise **Density** slightly in step 3.
+- *Upload fails or is refused:* the file is over 8 MB, or the connection
+  dropped during upload. Make it smaller (step 7) and try again.
+- *The model looks tiny or huge in the preview:* that's fine — the viewer
+  frames it automatically. Only the starting angle's zoom is affected;
+  set it again in step 10.
+
+### Other programs and compression
 
 SketchUp: *File ▸ Export ▸ 3D Model ▸ glTF Binary* (no Draco option — run the
 command below). Fusion 360 has no glTF export: export FBX/OBJ, import into
@@ -202,6 +326,6 @@ npx @gltf-transform/cli optimize model.glb model-web.glb \
   replace the file via the CMS (delete + re-upload).
 - **3D model upload fails or is refused** — the file is over the 8 MB limit,
   or the connection dropped during the single upload request. Compress it
-  (§9) and try again.
+  (§9b, step 7) and try again.
 - **Locked out / broken site** — everything is in git. From the repository,
   any previous commit can be restored (ask the developer).

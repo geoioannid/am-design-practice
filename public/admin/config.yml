@@ -88,13 +88,21 @@ collections:
           A single compressed .glb file — aim for 2–3 MB, 8 MB is the upload limit.
           When set, it replaces the main image at the top of the project page and
           visitors can rotate it; the main image is shown while it loads and as a
-          fallback. See "Uploading 3D models" in SETUP.md for exporting from Rhino
-          and compressing.
+          fallback. [How to upload a 3D model from Rhino →](#3d-model-guide)
       - label: 3D model description
         name: modelAlt
         widget: string
         required: false
         hint: 'One sentence describing the model for screen readers, e.g. "Oak sideboard with three doors". Only used when a 3D model is set.'
+      - label: 3D model starting angle
+        name: modelOrbit
+        widget: string
+        required: false
+        pattern: ['^-?\d+(\.\d+)?deg -?\d+(\.\d+)?deg \d+(\.\d+)?(%|m)$', 'Copy the angle shown under the model in the preview, e.g. 30deg 75deg 4.20m']
+        hint: >-
+          The view visitors see first. Turn the model in the preview on the right until it
+          looks right, click Copy and paste it here. Leave empty for the default
+          front three-quarter view. [Help](#3d-model-guide)
       - { label: Location, name: location, widget: string, required: false }
       - { label: Year, name: year, widget: string, required: false }
       - { label: Status, name: status, widget: string, required: false, hint: 'e.g. Built, In progress, Prototype, Study' }
