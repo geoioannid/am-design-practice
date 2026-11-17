@@ -169,8 +169,8 @@ from Rhino →** link under the *3D model* field opens it in a dialog, with
    tick **Simple planes**.
 4. **Export:** select the objects → *File ▸ Export Selected* → **glTF Binary
    (.glb)**, name like `oak-sideboard.glb`.
-5. **Export options:** ✅ Map Rhino Z to glTF Y · ✅ Export materials ·
-   ✅ Use display color… · ✅ **Use Draco compression**.
+5. **Export options** — turn on: Map Rhino Z to glTF Y, Export materials,
+   Use display color…, and **Use Draco compression**.
 6. **Size check:** under 2 MB is ideal, 3 MB at most. Too big → see 9b, step 7.
 7. **Main image:** have a render or screenshot from the angle you'll use.
 8. **In `/admin`** → the project → upload the `.glb` in **3D model** → one

@@ -41,12 +41,14 @@
     const [orbit, setOrbit] = React.useState('');
     const [copied, setCopied] = React.useState(false);
     const startOrbit = savedOrbit || DEFAULT_ORBIT;
+    const [touch, setTouch] = React.useState(false);
 
     React.useEffect(() => {
       const el = viewerRef.current;
       if (!el) return undefined;
       // ownerDocument is the preview iframe's document (rendered from the admin page).
       ensureModelViewer(el.ownerDocument);
+      setTouch(el.ownerDocument.defaultView.matchMedia('(pointer: coarse)').matches);
       const onChange = () => {
         if (typeof el.getCameraOrbit === 'function') setOrbit(formatOrbit(el.getCameraOrbit()));
         setCopied(false);
@@ -121,7 +123,11 @@
       h(
         'p',
         { className: 'mv-hint' },
-        'Drag to rotate, scroll to zoom. When the view looks right, copy the angle into “3D model starting angle”. ',
+        // On a phone the fields and the preview take turns on screen, so the
+        // instruction includes going back to the fields.
+        touch
+          ? 'Swipe to rotate, pinch to zoom. When the view looks right, tap Copy, go back to the fields and paste it into “3D model starting angle”. '
+          : 'Drag to rotate, scroll to zoom. When the view looks right, copy the angle into “3D model starting angle”. ',
         savedOrbit ? `Saved angle: ${savedOrbit}.` : 'No starting angle saved yet; visitors see the default view.',
       ),
     );
@@ -182,6 +188,17 @@
     .mv-angle button { font: 12px system-ui, sans-serif; padding: 7px 12px; border: 1px solid #1f2650; background: #fff; color: #1f2650; cursor: pointer; }
     .mv-angle button:first-of-type { background: #1f2650; color: #fff; }
     .mv-angle button:disabled { opacity: .5; cursor: default; }
+    .mv-angle button, .mv-angle input { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+    .mv-angle button:active:not(:disabled) { opacity: .8; }
+    /* Phone-sized pane or touch: label on its own line, the value full width,
+       two thumb-sized buttons; 16px text so iOS doesn't zoom on tap. */
+    @media (max-width: 520px), (pointer: coarse) {
+      .mv-angle { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+      .mv-angle .mv-label { grid-column: 1 / -1; }
+      .mv-angle input { grid-column: 1 / -1; box-sizing: border-box; height: 44px; font-size: 16px; line-height: 1; padding: 0 12px; }
+      .mv-angle button { min-height: 44px; font-size: 15px; }
+      .mv-hint { font-size: 15px; }
+    }
     .mv-hint { font-size: 13px; line-height: 1.5; color: #5c6182; margin: 8px 0 0; }
     `,
     { raw: true },

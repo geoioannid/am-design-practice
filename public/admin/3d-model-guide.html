@@ -9,8 +9,8 @@
     <li><strong>Simple materials</strong> (under ~10), or just display colours.</li>
     <li><strong>Mesh settings:</strong> <em>File ▸ Properties ▸ Mesh</em> → <strong>Jagged and faster</strong>, tick <strong>Simple planes</strong>.</li>
     <li><strong>Export:</strong> select the objects → <em>File ▸ Export Selected</em> → <strong>glTF Binary (*.glb)</strong>, named like <code>oak-sideboard.glb</code>.</li>
-    <li><strong>Export options:</strong> ✅ Map Rhino Z to glTF Y · ✅ Export materials · ✅ Use display color… · ✅ <strong>Use Draco compression</strong>.</li>
-    <li><strong>Size check:</strong> under 2 MB is ideal, 3 MB at most. Too big → <em>Step by step</em>, step 7.</li>
+    <li><strong>Export options</strong> — turn on: Map Rhino Z to glTF Y, Export materials, Use display color…, and <strong>Use Draco compression</strong>.</li>
+    <li><strong>Size check:</strong> under 2 MB is ideal, 3 MB at most. Too big → <a href="#" data-goto="detailed" data-anchor="guide-step-7"><em>Step by step</em>, step 7</a>.</li>
     <li><strong>Main image:</strong> have a render or screenshot from the angle you'll use.</li>
     <li><strong>Here:</strong> upload the <code>.glb</code> in <strong>3D model</strong> → one sentence in <strong>3D model description</strong>.</li>
     <li><strong>Starting angle:</strong> turn the model in the preview → <strong>Copy</strong> → paste into <strong>3D model starting angle</strong> (or leave empty) → <strong>Save</strong>.</li>
@@ -55,12 +55,12 @@
   </ol>
 
   <h3>5. Export options</h3>
-  <p>In the dialog that appears, make sure these are on:</p>
+  <p>In the dialog that appears, make sure these are <strong>on</strong>:</p>
   <ul>
-    <li>✅ <strong>Map Rhino Z to glTF Y</strong> — keeps the model the right way up.</li>
-    <li>✅ <strong>Export materials</strong></li>
-    <li>✅ <strong>Use display color for objects with no material set</strong></li>
-    <li>✅ <strong>Use Draco compression</strong> — off by default; this is the one that shrinks the file the most. Leave its level and the numbers below it as they are.</li>
+    <li><strong>Map Rhino Z to glTF Y</strong> — keeps the model the right way up.</li>
+    <li><strong>Export materials</strong></li>
+    <li><strong>Use display color for objects with no material set</strong></li>
+    <li><strong>Use Draco compression</strong> — off by default; this is the one that shrinks the file the most. Leave its level and the numbers below it as they are.</li>
   </ul>
   <p>Units don't matter: the export converts them to metres automatically.</p>
 
@@ -70,7 +70,7 @@
     <li><strong>Look:</strong> drag the file into <a href="https://modelviewer.dev/editor/" target="_blank" rel="noopener">modelviewer.dev/editor</a>. Check it is the right way up, the colours look right and curves aren't faceted.</li>
   </ul>
 
-  <h3>7. If it's too big</h3>
+  <h3 id="guide-step-7">7. If it's too big</h3>
   <p>Try in this order:</p>
   <ol>
     <li>Go back to step 1 — something hidden is often still in there.</li>
